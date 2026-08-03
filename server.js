@@ -50,28 +50,28 @@ app.post('/api/feedback', handleCommentSubmit);
 app.post('/api/reviews', handleCommentSubmit);
 
 // 4. 核心：处理获取留言列表 (修复 404 报错)
+// 4. 处理获取留言列表 (带完整容错机制)
 app.get('/api/reviews', async (req, res) => {
   try {
+    // 检查环境变量是否存在
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+      console.log('未配置 Supabase 环境变量');
+      return res.json([]); 
+    }
+
     const { data, error } = await supabase
       .from('box_status')
       .select('*')
       .order('id', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase 查询错误:', error.message);
+      return res.json([]); // 即使数据库报错，也返回空数组，绝不抛出 500
+    }
+
     res.json(data || []);
   } catch (err) {
-    // 即使出错也返回空数组，防止前端报 404 / SyntaxError
-    res.json([]);
+    console.error('服务器内部错误:', err.message);
+    res.json([]); // 兜底返回空数组
   }
 });
-app.get('/api/comments', async (req, res) => {
-  res.json([]);
-});
-
-// 兼容 Vercel 环境
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
-
-module.exports = app;
