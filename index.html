@@ -2,6 +2,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  // 🪄 自动补补丁：拦截所有发往 localhost:3000 的请求，自动转发给当前的 Vercel 服务器
+  const originalFetch = window.fetch;
+  window.fetch = function (url, options) {
+    if (typeof url === 'string' && (url.includes('localhost:3000') || url.includes('192.168.'))) {
+      url = url.replace(/^http:\/\/[^\/]+/, '');
+    }
+    return originalFetch(url, options);
+  };
+</script>
   <script type="module">
 import { createHotContext } from "/@vite/client";
 const hot = createHotContext("/__dummy__runtime-error-plugin");
