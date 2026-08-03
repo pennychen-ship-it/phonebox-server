@@ -3727,8 +3727,14 @@ function pollESP32Status() {
 
   const ipInput = document.getElementById('esp32_ip');
   const ip = (ipInput && ipInput.value.trim()) || '192.168.1.53';
-  const url = `http://${ip}/status`;
 
+// 如果是在 HTTPS (Vercel) 环境下运行，跳过局域网直连，防止浏览器报 Mixed Content 崩溃
+  if (window.location.protocol === 'https:') {
+    console.log('线上环境忽略 ESP32 局域网轮询');
+    return; 
+ }
+
+  const url = `http://${ip}/status`;
   fetch(url)
     .then(response => response.text())
     .then(status => {
