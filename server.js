@@ -3,6 +3,12 @@ const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
+const path = require('path');
+
+// 托管当前目录下的静态文件 (比如 index.html, style.css 等)
+app.use(express.static(path.join(__dirname, 'public'))); // 如果你的 html 在 public 文件夹
+// 或者如果 HTML 就直接放在根目录下，用下面这行：
+app.use(express.static(__dirname));
 const PORT = process.env.PORT || 3000;
 
 // 中间件配置
