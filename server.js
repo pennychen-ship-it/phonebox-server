@@ -8,47 +8,49 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 托管前端静态文件
+// 托管前端静态页面
 app.use(express.static(__dirname));
 
-// 1. 读取 Supabase 数据库密钥
+// Supabase 初始化
 const SUPABASE_URL = process.env.SUPABASE_URL || '';
 const SUPABASE_KEY = process.env.SUPABASE_KEY || '';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 2. 根路由返回主页
+// 1. 主页面入口
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// 3. 服务器运行状态测试
+// 2. 服务器测试接口
 app.get('/api/status', (req, res) => {
-  res.json({ status: 'online', message: 'PhoneBox 服务器与数据库连接正常！' });
+  res.json({ status: 'online', message: 'PhoneBox 服务器与数据库运行正常！' });
 });
 
-// 4. 【数据库接口】获取所有留言
-app.get('/api/comments', async (req, res) => {
-  const { data, error } = await supabase
-    .from('box_status') // 对应你在 Supabase 建立的表名
-    .select('*')
-    .order('id', { ascending: false });
+// 3. 核心：处理留言提交的统一函数
+const handleCommentSubmit = async (req, res) => {
+  try {
+    const rating = req.body.rating || req.body.stars || 5;
+    const comment = req.body.comment || req.body.text || req.body.content || '无内容';
 
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
-});
+    // 存入 Supabase 数据库 (box_status 表)
+    const { data, error } = await supabase
+      .from('box_status')
+      .insert([{ rating, comment }]);
 
-// 5. 【数据库接口】添加新留言
-app.post('/api/comments', async (req, res) => {
-  const { name, content } = req.body;
-  const { data, error } = await supabase
-    .from('box_status')
-    .insert([{ name, content }]);
+    if (error) throw error;
+    res.json({ success: true, message: '留言已成功保存到数据库！', data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
 
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ message: '留言成功存入数据库！', data });
-});
+// 4. 兼容前端所有可能的请求路径
+app.post('/api/comments', handleCommentSubmit);
+app.post('/comments', handleCommentSubmit);
+app.post('/api/feedback', handleCommentSubmit);
+app.post('/feedback', handleCommentSubmit);
 
-// 本地开发启动
+// 兼容 Vercel 环境与本地运行
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
