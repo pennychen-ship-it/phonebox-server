@@ -21,5 +21,13 @@ app.get('/api/status', (req, res) => {
 });
 
 // 启动服务器
-app.listen(PORT, () => {
-  console.log(`服务器启动成功，运行
+// 兼容 Vercel 环境和本地运行
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`服务器启动成功，运行在 http://localhost:${PORT}`);
+    });
+}
+
+// 必须导出 app，Vercel 才能正常接管路由！
+module.exports = app;
