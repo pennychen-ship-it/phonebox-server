@@ -5847,6 +5847,38 @@ document.addEventListener('keydown', e => {
     }
   };
 })();
+<div id="status-badge" class="badge">Checking System...</div>
+
+    <script>
+      const API_STATUS_URL = 'https://phonebox-server.vercel.app/';
+
+      async function fetchSystemStatus() {
+        const badge = document.getElementById('status-badge');
+        try {
+          const response = await fetch(API_STATUS_URL);
+          const data = await response.json();
+
+          if (data.status === 'online' && data.ipAddress) {
+            badge.innerText = `System Online (${data.ipAddress})`;
+            badge.style.backgroundColor = '#4CAF50';
+            badge.style.color = '#ffffff';
+          } else {
+            badge.innerText = 'System Offline';
+            badge.style.backgroundColor = '#f44336';
+            badge.style.color = '#ffffff';
+          }
+        } catch (error) {
+          console.error('获取系统状态失败:', error);
+          badge.innerText = 'System Status Unknown';
+          badge.style.backgroundColor = '#9e9e9e';
+        }
+      }
+
+      fetchSystemStatus();
+      setInterval(fetchSystemStatus, 10000);
+    </script>
+  </body>
+</html>
 </script>
 
 
