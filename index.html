@@ -5853,8 +5853,7 @@ document.addEventListener('keydown', e => {
 <div id="status-badge" class="badge">Checking System...</div>
 
     <script>
-      const API_STATUS_URL = 'https://phonebox-server.vercel.app/';
-
+      const API_STATUS_URL = 'https://phonebox-server.vercel.app/api/comments';
       async function fetchSystemStatus() {
         const badge = document.getElementById('status-badge');
         try {
