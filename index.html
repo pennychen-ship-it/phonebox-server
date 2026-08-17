@@ -5793,33 +5793,36 @@ document.addEventListener('keydown', e => {
     return;
   }
   try {
-    const res = await fetch('/api/comments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rating: rating, comment: text })
-    });
-    if (!res.ok) throw new Error('Server error');
-    const saved = await res.json();
-    if (saved && saved.id) addMyId(saved.id);
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: rating, comment: text })
+      });
+      if (!res.ok) throw new Error('Server error');
+      const saved = await res.json();
+      if (saved && saved.id) addMyId(saved.id);
 
-    msg.style.color = 'var(--success)';
-    msg.textContent = t('feedback_submitted');
-    document.getElementById('feedbackText').value = '';
-    selectStar(0);
+      msg.style.color = 'var(--success)';
+      msg.textContent = t('feedback_submitted');
+      document.getElementById('feedbackText').value = '';
+      selectStar(0);
 
-if (list) {
-  const newCard = document.createElement('div');
-  newCard.className = 'review-card'; // 页面原来的评论卡片样式类名
-  newCard.innerHTML = `
-    <div class="stars">${'★'.repeat(rating)}</div>
-    <p>${text}</p>
-    <small>${new Date().toLocaleString()}</small>
-  `;
-  list.prepend(newCard); // 插入到留言列表的最顶端
-}
-// ------------------------------------------------
+      // 提交成功后动态插入卡片
+      const list = document.querySelector('.reviews-list') || document.getElementById('comments-list');
+      if (list) {
+        const newCard = document.createElement('div');
+        newCard.className = 'review-card';
+        newCard.innerHTML = `
+          <div class="stars">${'★'.repeat(rating)}</div>
+          <p>${text}</p>
+          <small>${new Date().toLocaleString()}</small>
+        `;
+        list.prepend(newCard);
+      }
+    } catch (e) {
       msg.style.color = 'var(--danger)';
       msg.textContent = t('feedback_server_offline');
+    }
     }
   };
 })();
