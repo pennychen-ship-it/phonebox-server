@@ -5807,22 +5807,6 @@ document.addEventListener('keydown', e => {
     document.getElementById('feedbackText').value = '';
     selectStar(0);
 
-    // 提交成功后动态插入卡片
-    const list = document.querySelector('.reviews-list') || document.getElementById('comments-list');
-    if (list) {
-      const newCard = document.createElement('div');
-      newCard.className = 'review-card';
-      newCard.innerHTML = `${'★'.repeat(rating)}${text}`;
-      list.prepend(newCard);
-    }
-  } catch (e) {
-    msg.style.color = 'var(--danger)';
-    msg.textContent = t('feedback_server_offline');
-  }
-};
-// ---------------- 必须添加这几行 ----------------
-// 提交成功后，直接把刚才输入的评论展示到网页留言列表中
-const list = document.querySelector('.reviews-list') || document.getElementById('comments-list');
 if (list) {
   const newCard = document.createElement('div');
   newCard.className = 'review-card'; // 页面原来的评论卡片样式类名
