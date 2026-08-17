@@ -5800,12 +5800,26 @@ document.addEventListener('keydown', e => {
       });
       if (!res.ok) throw new Error('Server error');
       const saved = await res.json();
-      if (saved && saved.id) addMyId(saved.id);
-      msg.style.color = 'var(--success)';
-      msg.textContent = t('feedback_submitted');
-      document.getElementById('feedbackText').value = '';
-      selectStar(0);
-    } catch (e) {
+     if (saved && saved.id) addMyId(saved.id);
+msg.style.color = 'var(--success)';
+msg.textContent = t('feedback_submitted');
+document.getElementById('feedbackText').value = '';
+selectStar(0);
+
+// ---------------- 必须添加这几行 ----------------
+// 提交成功后，直接把刚才输入的评论展示到网页留言列表中
+const list = document.querySelector('.reviews-list') || document.getElementById('comments-list');
+if (list) {
+  const newCard = document.createElement('div');
+  newCard.className = 'review-card'; // 页面原来的评论卡片样式类名
+  newCard.innerHTML = `
+    <div class="stars">${'★'.repeat(rating)}</div>
+    <p>${text}</p>
+    <small>${new Date().toLocaleString()}</small>
+  `;
+  list.prepend(newCard); // 插入到留言列表的最顶端
+}
+// ------------------------------------------------
       msg.style.color = 'var(--danger)';
       msg.textContent = t('feedback_server_offline');
     }
