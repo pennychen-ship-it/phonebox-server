@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from 'box_status';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
