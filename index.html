@@ -5829,10 +5829,10 @@ document.addEventListener('keydown', e => {
       return;
     }
     try {
-      const res = await fetch('/api/reviews', {
+      const res = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'User', rating, comment: text })
+        body: JSON.stringify({ rating: rating, comment: text })
       });
       if (!res.ok) throw new Error('Server error');
       const saved = await res.json();
