@@ -5775,37 +5775,51 @@ document.addEventListener('keydown', e => {
     if (!ids.includes(String(id))) { ids.push(String(id)); localStorage.setItem(MY_IDS_KEY, JSON.stringify(ids)); }
   }
   // Override submitFeedback to use API + track submission ID
-  window.submitFeedback = async function(opts) {
-    opts = opts || {};
-    const msg  = document.getElementById('feedbackMsg');
-    const text = (opts.prefillComment !== undefined)
-      ? opts.prefillComment
-      : document.getElementById('feedbackText').value.trim();
-    const rating = (opts.prefillRating !== undefined) ? opts.prefillRating : _selectedStar;
-    if (!rating) {
-      msg.style.color = 'var(--danger)';
-      msg.textContent = t('feedback_select_star');
-      return;
-    }
-    if (!text) {
-      msg.style.color = 'var(--danger)';
-      msg.textContent = t('feedback_write_comment');
-      return;
-    }
-    try {
-      const res = await fetch('/api/comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating: rating, comment: text })
-      });
-      if (!res.ok) throw new Error('Server error');
-      const saved = await res.json();
-     if (saved && saved.id) addMyId(saved.id);
-msg.style.color = 'var(--success)';
-msg.textContent = t('feedback_submitted');
-document.getElementById('feedbackText').value = '';
-selectStar(0);
+ window.submitFeedback = async function(opts) {
+  opts = opts || {};
+  const msg = document.getElementById('feedbackMsg');
+  const text = (opts.prefillComment !== undefined)
+    ? opts.prefillComment
+    : document.getElementById('feedbackText').value.trim();
+  const rating = (opts.prefillRating !== undefined) ? opts.prefillRating : _selectedStar;
+  if (!rating) {
+    msg.style.color = 'var(--danger)';
+    msg.textContext = t('feedback_select_star');
+    return;
+  }
+  if (!text) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = t('feedback_write_comment');
+    return;
+  }
+  try {
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating: rating, comment: text })
+    });
+    if (!res.ok) throw new Error('Server error');
+    const saved = await res.json();
+    if (saved && saved.id) addMyId(saved.id);
 
+    msg.style.color = 'var(--success)';
+    msg.textContent = t('feedback_submitted');
+    document.getElementById('feedbackText').value = '';
+    selectStar(0);
+
+    // 提交成功后动态插入卡片
+    const list = document.querySelector('.reviews-list') || document.getElementById('comments-list');
+    if (list) {
+      const newCard = document.createElement('div');
+      newCard.className = 'review-card';
+      newCard.innerHTML = `${'★'.repeat(rating)}${text}`;
+      list.prepend(newCard);
+    }
+  } catch (e) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = t('feedback_server_offline');
+  }
+};
 // ---------------- 必须添加这几行 ----------------
 // 提交成功后，直接把刚才输入的评论展示到网页留言列表中
 const list = document.querySelector('.reviews-list') || document.getElementById('comments-list');
