@@ -6,23 +6,28 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  // 只允许 POST 请求
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  // 1. 获取评论列表 (GET)
+  if (req.method === 'GET') {
+    const { data, error } = await supabase
+      .from('box_status')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json(data);
   }
 
-  const { rating, comment } = req.body || {};
+  // 2. 提交新评论 (POST)
+  if (req.method === 'POST') {
+    const { rating, comment } = req.body || {};
+    const { data, error } = await supabase
+      .from('box_status')
+      .insert([{ rating: Number(rating) || 5, comment: String(comment || '') }])
+      .select();
 
-  // 明确写入 box_status 表
-  const { data, error } = await supabase
-    .from('box_status')
-    .insert([{ rating: Number(rating) || 5, comment: String(comment || '') }])
-    .select();
-
-  if (error) {
-    console.error('Supabase Error:', error);
-    return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ success: true, data: data[0] });
   }
 
-  return res.status(200).json({ success: true, data });
+  return res.status(405).json({ error: 'Method not allowed' });
 }
