@@ -3634,6 +3634,8 @@ let lastKnownHardwareOpenState = null;  // null = not yet observed; true/false o
 let weJustSentACommand = false;         // true briefly after our own sendServoCommand(), to avoid showing the bubble for our own actions
 
 function pollESP32Status() {
+  return; // 禁用 ESP32 轮询，防止 HTTPS 报 Mixed Content 错误
+  if (!pollerGracePeriodOver) return;
   // During the first couple of seconds after page load, checkSchedule()
   // (which runs synchronously and is driven purely by the real, trusted
   // schedule object) is the only thing allowed to set boxIsLocked. This
